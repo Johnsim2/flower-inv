@@ -1,4 +1,4 @@
-// UPDATED src/App.js with Image Lightbox
+// UPDATED src/App.js with Search Functionality
 // This replaces your existing App.js
 
 import React, { useState, useEffect } from 'react';
@@ -7,11 +7,13 @@ import PlantList from './components/PlantList';
 import PlantForm from './components/PlantForm';
 import ImageUpload from './components/ImageUpload';
 import ImageLightbox from './components/ImageLightbox';
+import SearchBar from './components/SearchBar';
 import { getPlants, getPlantNames, getBreeders, createPlant, updatePlant, deletePlant } from './api';
 
 function App() {
   // State management
   const [plants, setPlants] = useState([]);
+  const [filteredPlants, setFilteredPlants] = useState([]);
   const [plantNames, setPlantNames] = useState([]);
   const [breeders, setBreeders] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -42,6 +44,7 @@ function App() {
       ]);
 
       setPlants(plantsData);
+      setFilteredPlants(plantsData); // Initially show all plants
       setPlantNames(plantNamesData);
       setBreeders(breedersData);
     } catch (err) {
@@ -50,6 +53,51 @@ function App() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle search
+  const handleSearch = (searchTerm, searchField) => {
+    if (!searchTerm) {
+      // No search term - show all plants
+      setFilteredPlants(plants);
+      return;
+    }
+
+    const term = searchTerm.toLowerCase();
+    
+    const filtered = plants.filter(plant => {
+      switch (searchField) {
+        case 'code':
+          return plant.identification_code?.toLowerCase().includes(term);
+        
+        case 'variety':
+          return plant.variety_name?.toLowerCase().includes(term);
+        
+        case 'botanical':
+          return plant.botanical_name?.toLowerCase().includes(term);
+        
+        case 'color':
+          return plant.flower_color?.toLowerCase().includes(term);
+        
+        case 'breeder':
+          return plant.breeder_name?.toLowerCase().includes(term);
+        
+        case 'all':
+        default:
+          // Search in all fields
+          return (
+            plant.identification_code?.toLowerCase().includes(term) ||
+            plant.variety_name?.toLowerCase().includes(term) ||
+            plant.botanical_name?.toLowerCase().includes(term) ||
+            plant.flower_color?.toLowerCase().includes(term) ||
+            plant.breeder_name?.toLowerCase().includes(term) ||
+            plant.common_name?.toLowerCase().includes(term) ||
+            plant.notes?.toLowerCase().includes(term)
+          );
+      }
+    });
+
+    setFilteredPlants(filtered);
   };
 
   // Handle adding a new plant
@@ -201,13 +249,26 @@ function App() {
             editingPlant={editingPlant}
           />
         ) : (
-          <PlantList
-            plants={plants}
-            onEdit={handleEditClick}
-            onDelete={handleDeletePlant}
-            onManageImages={handleManageImages}
-            onImageClick={handleImageClick}
-          />
+          <>
+            {/* Search Bar */}
+            <SearchBar onSearch={handleSearch} />
+
+            {/* Plant List */}
+            <PlantList
+              plants={filteredPlants}
+              onEdit={handleEditClick}
+              onDelete={handleDeletePlant}
+              onManageImages={handleManageImages}
+              onImageClick={handleImageClick}
+            />
+
+            {/* Show count */}
+            {filteredPlants.length !== plants.length && (
+              <div className="search-results-count">
+                Showing {filteredPlants.length} of {plants.length} plants
+              </div>
+            )}
+          </>
         )}
       </main>
 
@@ -232,7 +293,7 @@ function App() {
 
       {/* Footer */}
       <footer className="app-footer">
-        <p>Flower Inventory Manager v1.2 | Total Plants: {plants.length} | With Photos: {plants.filter(p => p.primary_image).length}</p>
+        <p>Flower Inventory Manager v1.3 | Total Plants: {plants.length} | Showing: {filteredPlants.length} | With Photos: {plants.filter(p => p.primary_image).length}</p>
       </footer>
     </div>
   );

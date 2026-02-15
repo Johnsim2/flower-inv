@@ -1,4 +1,4 @@
-/* src/App.css */
+/* UPDATED src/App.css with Search Results Styling */
 
 * {
   box-sizing: border-box;
@@ -61,6 +61,18 @@
   width: 100%;
   margin: 0 auto;
   padding: 20px;
+}
+
+/* Search Results Count */
+.search-results-count {
+  margin-top: 15px;
+  padding: 12px 20px;
+  background: white;
+  border-radius: 6px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* Loading State */
